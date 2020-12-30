@@ -1,0 +1,22 @@
+sudo: required
+service:
+    - docker
+
+before_install:
+  - docker build -t theti/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true theti/react-test npm test
+
+after_success:
+  - docker build -t theti/multi-client ./client
+  - docker build -t theti/multi-nginx ./nginx
+  - docker build -t theti/multi-server ./server
+  - docker build -t theti/multi-worker ./worker
+  # Login to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push theti/multi-client
+  - docker push theti/multi-nginx
+  - docker push theti/multi-server
+  - docker push theti/multi-worker
