@@ -17,8 +17,21 @@ after_success:
   - docker build -t theti/multi-worker ./worker
   # Login to the docker CLI
   - echo "$DOCKER_PASSWORT" | docker login -u "$DOCKER_ID" --password-stdin
+
   # Take those images and push them to docker hub
   - docker push theti/multi-client
   - docker push theti/multi-nginx
   - docker push theti/multi-server
   - docker push theti/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-2'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-2-454403129518',
+  bucket_path: 'docker-multi'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
